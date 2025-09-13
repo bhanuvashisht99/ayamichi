@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AYAMICHI - The Beautiful Path</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Subtle animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.02) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.02) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .container {
+            position: relative;
+            width: 100%;
+            max-width: 1600px;
+            margin: 0 auto;
+            min-height: 100vh;
+            padding: 40px;
+            z-index: 1;
+        }
+
+        /* Main title */
+        .main-title {
+            text-align: center;
+            margin-bottom: 60px;
+            opacity: 0;
+            animation: fadeInUp 1s ease-out forwards;
+        }
+
+        .japanese-title {
+            font-size: 64px;
+            font-weight: 300;
+            color: #ffffff;
+            margin-bottom: 12px;
+            letter-spacing: 8px;
+            text-shadow: 0 0 40px rgba(255, 255, 255, 0.1);
+        }
+
+        .english-subtitle {
+            font-size: 20px;
+            color: #888888;
+            font-weight: 300;
+            letter-spacing: 3px;
+            margin-bottom: 8px;
+        }
+
+        .brand-name {
+            font-size: 32px;
+            font-weight: 500;
+            color: #ffffff;
+            letter-spacing: 4px;
+            opacity: 0.9;
+        }
+
+        /* Level sections */
+        .level-section {
+            margin-bottom: 50px;
+        }
+
+        .level-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #666666;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 25px;
+            text-align: center;
+            opacity: 0;
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+
+        .level-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        /* Node styles */
+        .node {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            position: relative;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s ease-out forwards;
+            min-width: 120px;
+        }
+
+        .node::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+        }
+
+        .node:hover::before {
+            opacity: 1;
+        }
+
+        .node:hover {
+            transform: translateY(-4px);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 
+                0 10px 40px rgba(0, 0, 0, 0.3),
+                0 0 20px rgba(255, 255, 255, 0.1);
+        }
+
+        .node.active {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-8px) scale(1.05);
+            box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.4),
+                0 0 30px rgba(255, 255, 255, 0.2);
+        }
+
+        .node.active::before {
+            opacity: 1;
+        }
+
+        .node-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 6px;
+            letter-spacing: 1px;
+        }
+
+        .node-japanese {
+            font-size: 24px;
+            color: #cccccc;
+            margin-bottom: 8px;
+            font-weight: 400;
+        }
+
+        .node-meaning {
+            font-size: 12px;
+            color: #888888;
+            font-weight: 400;
+            line-height: 1.4;
+        }
+
+        /* Special node types */
+        .main-node {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.08));
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 30px 40px;
+            min-width: 200px;
+        }
+
+        .main-node .node-text {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 3px;
+        }
+
+        .main-node .node-japanese {
+            font-size: 32px;
+        }
+
+        .compound-node {
+            border-color: rgba(168, 85, 247, 0.4);
+            background: rgba(168, 85, 247, 0.05);
+        }
+
+        .compound-node:hover,
+        .compound-node.active {
+            border-color: rgba(168, 85, 247, 0.6);
+            box-shadow: 
+                0 10px 40px rgba(0, 0, 0, 0.3),
+                0 0 20px rgba(168, 85, 247, 0.3);
+        }
+
+        .single-node {
+            border-color: rgba(34, 197, 94, 0.6);
+            background: rgba(34, 197, 94, 0.08);
+            min-width: 100px;
+            padding: 18px 22px;
+        }
+
+        .single-node .node-text {
+            font-size: 20px;
+            font-weight: 700;
+            color: #22c55e;
+        }
+
+        .single-node .node-japanese {
+            font-size: 22px;
+            color: #16a34a;
+        }
+
+        .single-node:hover,
+        .single-node.active {
+            border-color: rgba(34, 197, 94, 0.8);
+            box-shadow: 
+                0 10px 40px rgba(0, 0, 0, 0.3),
+                0 0 20px rgba(34, 197, 94, 0.4);
+        }
+
+        /* Animation delays */
+        .level-1 .level-title { animation-delay: 0.5s; }
+        .level-1 .node { animation-delay: 0.7s; }
+
+        .level-2 .level-title { animation-delay: 1s; }
+        .level-2 .node:nth-child(1) { animation-delay: 1.2s; }
+        .level-2 .node:nth-child(2) { animation-delay: 1.4s; }
+
+        .level-3 .level-title { animation-delay: 1.6s; }
+        .level-3 .node:nth-child(1) { animation-delay: 1.8s; }
+        .level-3 .node:nth-child(2) { animation-delay: 2s; }
+        .level-3 .node:nth-child(3) { animation-delay: 2.2s; }
+        .level-3 .node:nth-child(4) { animation-delay: 2.4s; }
+
+        .level-4 .level-title { animation-delay: 2.6s; }
+        .level-4 .node:nth-child(1) { animation-delay: 2.8s; }
+        .level-4 .node:nth-child(2) { animation-delay: 3s; }
+        .level-4 .node:nth-child(3) { animation-delay: 3.2s; }
+
+        .level-5 .level-title { animation-delay: 3.4s; }
+        .level-5 .node:nth-child(1) { animation-delay: 3.6s; }
+        .level-5 .node:nth-child(2) { animation-delay: 3.8s; }
+        .level-5 .node:nth-child(3) { animation-delay: 4s; }
+        .level-5 .node:nth-child(4) { animation-delay: 4.2s; }
+        .level-5 .node:nth-child(5) { animation-delay: 4.4s; }
+        .level-5 .node:nth-child(6) { animation-delay: 4.6s; }
+
+        .level-6 .level-title { animation-delay: 4.8s; }
+        .level-6 .node:nth-child(1) { animation-delay: 5s; }
+        .level-6 .node:nth-child(2) { animation-delay: 5.2s; }
+        .level-6 .node:nth-child(3) { animation-delay: 5.4s; }
+
+        /* Coming soon badge */
+        .status-badge {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            padding: 12px 20px;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            opacity: 0;
+            animation: fadeIn 1s ease-out 6s forwards;
+        }
+
+        /* Responsive design */
+        @media (max-width: 1200px) {
+            .container {
+                padding: 30px;
+            }
+            
+            .japanese-title {
+                font-size: 48px;
+                letter-spacing: 6px;
+            }
+            
+            .brand-name {
+                font-size: 24px;
+                letter-spacing: 3px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .japanese-title {
+                font-size: 36px;
+                letter-spacing: 4px;
+            }
+            
+            .english-subtitle {
+                font-size: 16px;
+                letter-spacing: 2px;
+            }
+            
+            .brand-name {
+                font-size: 20px;
+                letter-spacing: 2px;
+            }
+            
+            .level-content {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .node {
+                min-width: auto;
+                width: 100%;
+                max-width: 300px;
+                margin: 0 auto;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Pulse animation for active states */
+        .pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 
+                    0 10px 40px rgba(0, 0, 0, 0.3),
+                    0 0 20px rgba(255, 255, 255, 0.1);
+            }
+            50% {
+                box-shadow: 
+                    0 15px 50px rgba(0, 0, 0, 0.4),
+                    0 0 30px rgba(255, 255, 255, 0.2);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Status Badge -->
+        <div class="status-badge">Coming Soon...</div>
+
+        <!-- Main Title -->
+        <div class="main-title">
+            <div class="japanese-title">綾道</div>
+            <div class="english-subtitle">The Beautiful Path</div>
+            <div class="brand-name">AYAMICHI</div>
+        </div>
+
+        <!-- Level 1: Complete Word -->
+        <div class="level-section level-1">
+            <div class="level-title">Complete Philosophy</div>
+            <div class="level-content">
+                <div class="node main-node" data-id="ayamichi">
+                    <div class="node-text">AYAMICHI</div>
+                    <div class="node-japanese">綾道</div>
+                    <div class="node-meaning">The Beautiful Path<br>Complete Life Philosophy</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Level 2: Major Components -->
+        <div class="level-section level-2">
+            <div class="level-title">Major Components</div>
+            <div class="level-content">
+                <div class="node compound-node" data-id="aya">
+                    <div class="node-text">AYA</div>
+                    <div class="node-japanese">綾</div>
+                    <div class="node-meaning">Beautiful Pattern<br>Interconnected Design</div>
+                </div>
+                <div class="node compound-node" data-id="michi">
+                    <div class="node-text">MICHI</div>
+                    <div class="node-japanese">道</div>
+                    <div class="node-meaning">The Way<br>Continuous Journey</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Level 3: Core Elements -->
+        <div class="level-section level-3">
+            <div class="level-title">Foundational Elements</div>
+            <div class="level-content">
+                <div class="node" data-id="a">
+                    <div class="node-text">A</div>
+                    <div class="node-japanese">阿</div>
+                    <div class="node-meaning">Beginning<br>Foundation</div>
+                </div>
+                <div class="node" data-id="ya">
+                    <div class="node-text">YA</div>
+                    <div class="node-japanese">矢</div>
+                    <div class="node-meaning">Direction<br>Purpose</div>
+                </div>
+                <div class="node" data-id="mi">
+                    <div class="node-text">MI</div>
+                    <div class="node-japanese">美</div>
+                    <div class="node-meaning">Beauty<br>Essence</div>
+                </div>
+                <div class="node" data-id="chi">
+                    <div class="node-text">CHI</div>
+                    <div class="node-japanese">智</div>
+                    <div class="node-meaning">Wisdom<br>Grounded Knowledge</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Level 4: Compound Combinations -->
+        <div class="level-section level-4">
+            <div class="level-title">Meaningful Combinations</div>
+            <div class="level-content">
+                <div class="node compound-node" data-id="ami">
+                    <div class="node-text">AMI</div>
+                    <div class="node-japanese">阿美</div>
+                    <div class="node-meaning">Foundational Beauty<br>Friend • Companion</div>
+                </div>
+                <div class="node compound-node" data-id="yami">
+                    <div class="node-text">YAMI</div>
+                    <div class="node-japanese">闇</div>
+                    <div class="node-meaning">Creative Darkness<br>Mystery • Depth</div>
+                </div>
+                <div class="node compound-node" data-id="ichi">
+                    <div class="node-text">ICHI</div>
+                    <div class="node-japanese">一</div>
+                    <div class="node-meaning">Unity • Oneness<br>First Principle</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Level 5: Sub-Components (THIS IS WHERE "I" SHOULD BE) -->
+        <div class="level-section level-5">
+            <div class="level-title">Sub-Components & Single Elements</div>
+            <div class="level-content">
+                <div class="node single-node" data-id="i">
+                    <div class="node-text">I</div>
+                    <div class="node-japanese">い</div>
+                    <div class="node-meaning">Being • Self<br>Individual Element</div>
+                </div>
+                <div class="node single-node" data-id="y">
+                    <div class="node-text">Y</div>
+                    <div class="node-meaning">Sound Element<br>From YA</div>
+                </div>
+                <div class="node single-node" data-id="ch">
+                    <div class="node-text">CH</div>
+                    <div class="node-meaning">Sound Cluster<br>From CHI</div>
+                </div>
+                <div class="node single-node" data-id="am">
+                    <div class="node-text">AM</div>
+                    <div class="node-meaning">To Be<br>From AMI</div>
+                </div>
+                <div class="node single-node" data-id="ic">
+                    <div class="node-text">IC</div>
+                    <div class="node-meaning">Sound Part<br>From ICHI</div>
+                </div>
+                <div class="node single-node" data-id="hi">
+                    <div class="node-text">HI</div>
+                    <div class="node-japanese">日</div>
+                    <div class="node-meaning">Sun • Day<br>From ICHI</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Level 6: Extended Patterns -->
+        <div class="level-section level-6">
+            <div class="level-title">Extended Patterns</div>
+            <div class="level-content">
+                <div class="node compound-node" data-id="ayami">
+                    <div class="node-text">AYAMI</div>
+                    <div class="node-japanese">綾美</div>
+                    <div class="node-meaning">Patterned Beauty<br>Aesthetic Harmony</div>
+                </div>
+                <div class="node compound-node" data-id="amichi">
+                    <div class="node-text">AMICHI</div>
+                    <div class="node-japanese">阿美智</div>
+                    <div class="node-meaning">Beautiful Wisdom<br>Complete Path</div>
+                </div>
+                <div class="node compound-node" data-id="yachi">
+                    <div class="node-text">YACHI</div>
+                    <div class="node-japanese">八千</div>
+                    <div class="node-meaning">Infinite Directions<br>Endless Possibilities</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Professional node interaction system
+        class NodeManager {
+            constructor() {
+                this.activeNode = null;
+                this.nodes = document.querySelectorAll('.node');
+                this.init();
+            }
+
+            init() {
+                this.nodes.forEach(node => {
+                    node.addEventListener('click', (e) => this.handleNodeClick(e));
+                    node.addEventListener('mouseenter', (e) => this.handleNodeHover(e));
+                    node.addEventListener('mouseleave', (e) => this.handleNodeLeave(e));
+                });
+            }
+
+            handleNodeClick(e) {
+                e.preventDefault();
+                const clickedNode = e.currentTarget;
+                const nodeId = clickedNode.dataset.id;
+
+                // If clicking the same node, deactivate it
+                if (this.activeNode === clickedNode) {
+                    this.deactivateNode(clickedNode);
+                    this.activeNode = null;
+                    this.showAllNodes();
+                    return;
+                }
+
+                // Deactivate previous node
+                if (this.activeNode) {
+                    this.deactivateNode(this.activeNode);
+                }
+
+                // Activate new node
+                this.activateNode(clickedNode);
+                this.activeNode = clickedNode;
+                
+                // Show related nodes and hide others
+                this.showRelatedNodes(nodeId);
+                
+                // Add subtle haptic feedback
+                this.addRippleEffect(clickedNode, e);
+            }
+
+            handleNodeHover(e) {
+                const node = e.currentTarget;
+                if (node !== this.activeNode) {
+                    node.style.transform = 'translateY(-4px)';
+                }
+            }
+
+            handleNodeLeave(e) {
+                const node = e.currentTarget;
+                if (node !== this.activeNode) {
+                    node.style.transform = 'translateY(0)';
+                }
+            }
+
+            activateNode(node) {
+                node.classList.add('active', 'pulse');
+                node.style.transform = 'translateY(-8px) scale(1.05)';
+            }
+
+            deactivateNode(node) {
+                node.classList.remove('active', 'pulse');
+                node.style.transform = 'translateY(0) scale(1)';
+            }
+
+            showRelatedNodes(nodeId) {
+                // Define comprehensive relationships
+                const relationships = {
+                    'ayamichi': ['aya', 'michi', 'a', 'ya', 'mi', 'chi', 'ayami', 'amichi'],
+                    'aya': ['a', 'ya', 'ayami'],
+                    'michi': ['mi', 'chi', 'amichi'],
+                    'a': ['aya', 'ami', 'ayami', 'am'],
+                    'ya': ['aya', 'yami', 'y', 'yachi'],
+                    'mi': ['michi', 'ami', 'yami', 'ayami', 'amichi'],
+                    'chi': ['michi', 'ichi', 'ch', 'i', 'yachi', 'amichi'],
+                    'ami': ['a', 'mi', 'am', 'i'],
+                    'yami': ['ya', 'mi'],
+                    'ichi': ['i', 'ch', 'chi', 'hi', 'ic'],
+                    'i': ['ichi', 'ami', 'chi', 'hi', 'ic'],
+                    'y': ['ya'],
+                    'ch': ['chi', 'ichi'],
+                    'am': ['ami', 'a'],
+                    'ic': ['ichi', 'i'],
+                    'hi': ['ichi', 'i'],
+                    'ayami': ['aya', 'mi', 'a', 'ya', 'amichi'],
+                    'amichi': ['a', 'mi', 'chi', 'michi', 'ayami'],
+                    'yachi': ['ya', 'chi']
+                };
+
+                const relatedIds = relationships[nodeId] || [];
+
+                this.nodes.forEach(node => {
+                    const id = node.dataset.id;
+                    if (id === nodeId) return; // Skip the active node
+
+                    if (relatedIds.includes(id)) {
+                        // Show related nodes with subtle highlight
+                        node.style.opacity = '1';
+                        node.style.transform = 'translateY(0) scale(1)';
+                        node.style.borderColor = 'rgba(255, 255, 255, 0.4)';
+                    } else {
+                        // Fade unrelated nodes
+                        node.style.opacity = '0.3';
+                        node.style.transform = 'translateY(0) scale(0.95)';
+                        node.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                    }
+                });
+            }
+
+            showAllNodes() {
+                this.nodes.forEach(node => {
+                    node.style.opacity = '1';
+                    node.style.transform = 'translateY(0) scale(1)';
+                    node.style.borderColor = '';
+                });
+            }
+
+            addRippleEffect(node, event) {
+                const rect = node.getBoundingClientRect();
+                const x = event.clientX - rect.left;
+                const y = event.clientY - rect.top;
+
+                const ripple = document.createElement('div');
+                ripple.style.cssText = `
+                    position: absolute;
+                    left: ${x}px;
+                    top: ${y}px;
+                    width: 4px;
+                    height: 4px;
+                    background: rgba(255, 255, 255, 0.6);
+                    border-radius: 50%;
+                    transform: translate(-50%, -50%) scale(0);
+                    animation: ripple 0.6s ease-out;
+                    pointer-events: none;
+                    z-index: 10;
+                `;
+
+                node.style.position = 'relative';
+                node.appendChild(ripple);
+
+                setTimeout(() => ripple.remove(), 600);
+            }
+        }
+
+        // Add ripple animation
+        const rippleStyle = document.createElement('style');
+        rippleStyle.textContent = `
+            @keyframes ripple {
+                to {
+                    transform: translate(-50%, -50%) scale(20);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(rippleStyle);
+
+        // Initialize the node manager when page loads
+        window.addEventListener('load', () => {
+            new NodeManager();
+        });
+    </script>
+</body>
+</html>
